@@ -17,6 +17,13 @@ body {
   height: 100%;
 }
 
+.formLogs{
+    display: flex;
+  flex-direction: column;
+  gap: 1rem; 
+  max-width: 600px;  
+  margin: 0 auto;    
+}
 
 .loginContainer {
   margin: 10% auto;
@@ -108,11 +115,14 @@ button {
   font-family: "Source Sans Pro", sans-serif;
   padding: 10px 15px;
   margin: 0 auto 10px auto;
-  display: flex;
-  flex-direction: row;
+  display: block;
   text-align: center;
   font-size: 18px;
   color: white;
   font-weight: 300;
   outline: 0;
+}
+
+.nameRow{
+
 }
