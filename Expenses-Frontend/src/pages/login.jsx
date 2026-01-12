@@ -37,7 +37,7 @@ function Login() {
     return (
         <div className="loginContainer curved">
       <h1 className="loginH1">LOGIN</h1>
-        <form onSubmit={submitLogin} className="formLogs">
+        <form onSubmit={submitLogin}>
             <input className="loginInput"
               onChange={loginInput}
               name="email"
