@@ -1,12 +1,14 @@
-import {useState, useEffect} from "react";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import PublicHeader from '../components/PublicHeader';
 
 function Login() {
-    const [login, setLogin] = useState({
-    email:"",
-    password:""
-  })
+  const [login, setLogin] = useState({
+    email: "",
+    password: ""
+  });
 
-  const [isMouseover, setIsMouseOver] =useState(false);
+  const [isMouseover, setIsMouseOver] = useState(false);
 
   function mouseOver() {
     setIsMouseOver(true);
@@ -16,49 +18,168 @@ function Login() {
     setIsMouseOver(false);
   }
 
-  function loginInput(event){
-    const {name, value} = event.target
-    setLogin((prevValue)=>{
-       return {
+  function loginInput(e) {
+    const { name, value } = e.target;
+    setLogin((prevValue) => {
+      return {
         ...prevValue,
         [name]: value,
       };
     });
   }
 
-  function submitLogin(event){
-        setLogin({
-        email:"",
-        password:""
+  function submitLogin(e) {
+    setLogin({
+      email: "",
+      password: ""
     });
-    event.preventDefault();
-    }
+    e.preventDefault();
+    // → Add your real login logic here later (axios to backend)
+  }
 
-    return (
-        <div className="loginContainer curved">
-      <h1 className="loginH1">LOGIN</h1>
-        <form onSubmit={submitLogin}>
-            <input className="loginInput"
-              onChange={loginInput}
-              name="email"
-              value={login.email}
-              placeholder="Email"
-            />
-            <input className="loginInput"
-              onChange={loginInput}
-              name="password"
-              value={login.password}
-              placeholder="Password"
-            />
-            <button className="loginButton" 
-            style={{ backgroundColor: isMouseover ? "rgba(0, 0, 0, 0.457)" : "rgb(255, 255, 255)" }}
+  const navigate = useNavigate();
+
+  return (
+    <>
+    <PublicHeader />
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #4491b3 0%, #2c5f7a 100%)',
+      color: 'white',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem 1rem',
+      animation: 'fadeIn 1s ease-out'
+    }}>
+      {/* Form container – glass-like, centered */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.12)',
+        backdropFilter: 'blur(12px)',
+        borderRadius: '16px',
+        padding: '3rem 2.5rem',
+        width: '100%',
+        maxWidth: '480px',
+        boxShadow: '0 12px 32px rgba(0,0,0,0.25)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        textAlign: 'center'
+      }}>
+        <h1 style={{
+          fontSize: '2.8rem',
+          fontWeight: '800',
+          marginBottom: '2.5rem',
+          letterSpacing: '-0.02em',
+          textShadow: '0 2px 8px rgba(0,0,0,0.3)'
+        }}>
+          Login
+        </h1>
+
+        <form onSubmit={submitLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
+          <input
+            className="loginInput" 
+            onChange={loginInput}
+            name="email"
+            value={login.email}
+            placeholder="Email"
+            type="email"
+            required
+            style={{
+              width: '100%',
+              padding: '1rem 1.2rem',
+              fontSize: '1.1rem',
+              background: 'rgba(255,255,255,0.18)',
+              border: '1px solid rgba(255,255,255,0.35)',
+              borderRadius: '10px',
+              color: 'white',
+              outline: 'none',
+              transition: 'all 0.25s ease',
+              boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.15)'
+            }}
+            onFocus={(e) => e.target.style.background = 'rgba(255,255,255,0.28)'}
+            onBlur={(e) => e.target.style.background = 'rgba(255,255,255,0.18)'}
+          />
+
+          <input
+            className="loginInput"
+            onChange={loginInput}
+            name="password"
+            value={login.password}
+            placeholder="Password"
+            type="password"
+            required
+            style={{
+              width: '100%',
+              padding: '1rem 1.2rem',
+              fontSize: '1.1rem',
+              background: 'rgba(255,255,255,0.18)',
+              border: '1px solid rgba(255,255,255,0.35)',
+              borderRadius: '10px',
+              color: 'white',
+              outline: 'none',
+              transition: 'all 0.25s ease',
+              boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.15)'
+            }}
+            onFocus={(e) => e.target.style.background = 'rgba(255,255,255,0.28)'}
+            onBlur={(e) => e.target.style.background = 'rgba(255,255,255,0.18)'}
+          />
+
+          <button
+            className="loginButton"
+            type="submit"
+            style={{
+              padding: '1rem 0',
+              fontSize: '1.25rem',
+              fontWeight: '600',
+              backgroundColor: isMouseover ? '#4491b3' : '#2c5f7a',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              marginTop: '1rem',
+              transition: 'all 0.25s ease',
+              boxShadow: '0 6px 16px rgba(0,0,0,0.25)'
+            }}
+            onMouseOver={mouseOver}
             onMouseOut={mouseOut}
-            onMouseOver={mouseOver}>Login</button>
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            Login
+          </button>
         </form>
-        <p>Not registered ?. Sign up now </p>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 270"><path fill="#fff" fill-opacity="1" d="M0,96L30,85.3C60,75,120,53,180,74.7C240,96,300,160,360,208C420,256,480,288,540,272C600,256,660,192,720,181.3C780,171,840,213,900,213.3C960,213,1020,171,1080,149.3C1140,128,1200,128,1260,106.7C1320,85,1380,43,1410,21.3L1440,0L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320L0,320Z"></path></svg>
-     </div>
-    )
-};
+
+        <p style={{
+          marginTop: '2rem',
+          fontSize: '1.1rem',
+          opacity: 0.9
+        }}>
+          Not registered? {'  '}
+          <span
+            onClick={() => navigate('/register')}
+            style={{
+              color: '#a5d8ff',
+              cursor: 'pointer',
+              fontWeight: '600',
+              textDecoration: 'none'
+            }}
+          >
+            Sign up now
+          </span>
+        </p>
+      </div>
+
+      {/* Fade-in animation */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        div { animation: fadeIn 0.8s ease-out; }
+      `}</style>
+    </div>
+    </>
+  );
+}
 
 export default Login;
