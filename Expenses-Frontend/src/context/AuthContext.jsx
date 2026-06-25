@@ -5,16 +5,19 @@ export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
+
+  
   const navigate = useNavigate();
 
-  // Check for token on app load
+  
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       setIsAuthenticated(true);
-      // Optional: fetch user info from backend if needed
     }
+    setIsLoading(false);
   }, []);
 
   const login = (token) => {
@@ -27,11 +30,11 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
     setUser(null);
-    navigate('/');
+    navigate('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, user }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout, user }}>
       {children}
     </AuthContext.Provider>
   );

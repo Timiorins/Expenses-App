@@ -1,10 +1,57 @@
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
-export default function Dashboard({ expenses }) {
-  const total = expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+export default function Dashboard() {
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { isAuthenticated, isLoading } = useContext(AuthContext);
 
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if(isLoading) return;
+
+    if (!isAuthenticated) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    const fetchExpenses = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:8080/api/expenses', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch');
+
+        const data = await res.json();
+        setExpenses(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExpenses();
+  }, [isAuthenticated, isLoading, navigate]);
+
+
+  if (isLoading || loading) {
+    return <LoadingSpinner message={isLoading ? "Checking authentication..." : "Loading expenses..."} />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+
+  const total = expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
 
   return (
     <div style={{
@@ -17,7 +64,7 @@ export default function Dashboard({ expenses }) {
       justifyContent: 'center',
       padding: '6rem 1rem 4rem',
     }}>
-      {/* Hero Heading */}
+      
       <h1 style={{
         fontSize: 'clamp(3rem, 7vw, 5rem)',
         fontWeight: '800',
@@ -40,7 +87,9 @@ export default function Dashboard({ expenses }) {
         Here's a quick overview of your spending
       </p>
 
-      {/* Stats Cards – grid layout */}
+      {loading ? (
+        <p>Loading your data...</p>
+      ) : (
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -125,8 +174,8 @@ export default function Dashboard({ expenses }) {
           </p>
         </div>
       </div>
+      )}
 
-      {/* Call-to-action */}
       <p 
         onClick={() => navigate('/new-expense')}style={{
         marginTop: '4rem',

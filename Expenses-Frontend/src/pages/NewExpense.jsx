@@ -1,12 +1,18 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '../components/LoadingSpinner';
 
-export default function NewExpense({ setExpenses }) {
+export default function NewExpense() {
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState('');
 
   const [isMouseover, setIsMouseOver] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false); 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const navigate = useNavigate(); 
 
   function mouseOver() {
     setIsMouseOver(true);
@@ -14,38 +20,75 @@ export default function NewExpense({ setExpenses }) {
 
   function mouseOut() {
     setIsMouseOver(false);
-  }
+  } 
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!title || !amount || !date) {
-      alert('Please fill in all fields'); 
+      setError('Please fill in all fields');
       return;
     }
 
-    const newExpense = {
-      id: Date.now() + Math.random(),
-      title: title.trim(),
-      amount: parseFloat(amount),
-      date
-    };
+    setError('');
+    setLoading(true);
 
-    setExpenses(prev => [...prev, newExpense]);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Not logged in');
 
-    // Reset form
-    setTitle('');
-    setAmount('');
-    setDate('');
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_URL}/api/expenses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          amount: parseFloat(amount),
+          date,  
+        })
+      });
 
-    // Show success toast
-    setShowSuccessToast(true);
+      const data = await response.json();
 
-    // Auto-hide after 3 seconds
-    setTimeout(() => {
-      setShowSuccessToast(false);
-    }, 3000);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add expense');
+      }
+
+      
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 3000);
+
+      
+      setTitle('');
+      setAmount('');
+      setDate('');
+      setError('');
+      navigate('/all-expenses');
+      } catch (err) {
+      console.error('New expense error:', err);
+
+      if (err.response?.data?.messages) {
+        const errorMessages = err.response.data.messages.join('\n');
+        setError(errorMessages);
+        toast.error(errorMessages);
+      } else {
+        const msg = err.response?.data?.error || err.message || 'Failed to add expense';
+        setError(msg);
+        toast.error(msg);
+      }
+    } finally {
+      setDataLoading(false);   // or setLoading(false) if you used that name
+    }
+    // } catch (err) {
+    //   setError(err.message || 'Something went wrong');
+    // } finally {
+    //   setLoading(false);
+    // }
   };
+
 
   return (
     <div style={{
@@ -80,6 +123,8 @@ export default function NewExpense({ setExpenses }) {
         }}>
           Add New Expense
         </h1>
+
+        {error && <p style={{ color: '#ff6b6b', marginBottom: '1.5rem' }}>{error}</p>}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem' }}>
           <div>
@@ -184,25 +229,27 @@ export default function NewExpense({ setExpenses }) {
 
           <button
             type="submit"
+            disabled={loading}
             style={{
               padding: '1rem 0',
               fontSize: '1.25rem',
               fontWeight: '600',
-              backgroundColor: isMouseover ? '#4491b3' : '#2c5f7a',
+              backgroundColor: loading ? '#1e3a5f' : (isMouseover ? '#4491b3' : '#2c5f7a'),
               color: 'white',
               border: 'none',
               borderRadius: '12px',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               marginTop: '2rem',
               transition: 'all 0.3s ease',
-              boxShadow: '0 6px 16px rgba(0,0,0,0.25)'
+              boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
+              opacity: loading ? 0.7 : 1
             }}
             onMouseOver={mouseOver}
             onMouseOut={mouseOut}
             onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
           >
-            Add Expense
+            {loading ? 'Adding...' : 'Add Expense'}
           </button>
         </form>
       </div>

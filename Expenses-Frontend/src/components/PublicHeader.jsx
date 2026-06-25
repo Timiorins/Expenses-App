@@ -10,8 +10,8 @@ export default function PublicHeader() {
       right: 0,
       padding: '1.5rem 2rem',
       zIndex: 1000,
-      background: 'transparent', // no background/box
-      pointerEvents: 'none' // so it doesn't block clicks underneath (optional)
+      background: 'transparent',
+      pointerEvents: 'none' // so it doesn't block clicks underneath
     }}>
       <NavLink
         to="/"

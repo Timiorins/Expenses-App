@@ -1,29 +1,109 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { AuthContext } from '../context/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { Navigate } from 'react-router-dom';
 
-export default function AllExpenses({ expenses, setExpenses }) {
+export default function AllExpenses() {
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [sortByAmount, setSortByAmount] = useState(null);
+  
 
   // State for delete confirmation modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [expenseToDeleteId, setExpenseToDeleteId] = useState(null);
+
+  const { isAuthenticated, isLoading } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (isLoading) return;
+  
+    if (!isAuthenticated) return;
+
+    const fetchExpenses = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const API_URL = import.meta.env.VITE_API_URL;
+        const res = await fetch(`${API_URL}/api/expenses`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || `Error ${res.status}`);
+        }
+
+        const data = await res.json();
+        setExpenses(data);
+      } catch (err) {
+        console.error('Fetch expenses failed:', err);
+        setError(err.message || 'Failed to load expenses');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExpenses();
+  }, [isAuthenticated, isLoading]);
+
+
+  if (isLoading || loading) {
+    return <LoadingSpinner message={isLoading ? "Checking authentication..." : "Loading expenses..."} />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   const sortedExpenses = [...expenses].sort((a, b) => {
     if (sortByAmount === 'asc') return Number(a.amount) - Number(b.amount);
     if (sortByAmount === 'desc') return Number(b.amount) - Number(a.amount);
     return new Date(b.date) - new Date(a.date);
   });
+ 
+  const toggleAmountSort = () => {
+    if (!sortByAmount || sortByAmount === 'asc') setSortByAmount('desc');
+    else setSortByAmount('asc');
+  };
+
 
   const openDeleteModal = (id) => {
     setExpenseToDeleteId(id);
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    if (expenseToDeleteId !== null) {
-      setExpenses(current => current.filter(exp => exp.id !== expenseToDeleteId));
+  const confirmDelete = async () => {
+    if (expenseToDeleteId === null) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const API_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_URL}/api/expenses/${expenseToDeleteId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) throw new Error('Delete failed');
+
+      // Remove from local state
+      setExpenses(prev => prev.filter(exp => exp.id !== expenseToDeleteId));
+    } catch (err) {
+      console.error('Delete error:', err);
+      setError('Failed to delete expense');
     }
+
     setShowDeleteModal(false);
     setExpenseToDeleteId(null);
   };
@@ -33,10 +113,6 @@ export default function AllExpenses({ expenses, setExpenses }) {
     setExpenseToDeleteId(null);
   };
 
-  const toggleAmountSort = () => {
-    if (!sortByAmount || sortByAmount === 'asc') setSortByAmount('desc');
-    else setSortByAmount('asc');
-  };
 
   return (
     <div style={{
@@ -94,7 +170,15 @@ export default function AllExpenses({ expenses, setExpenses }) {
       </div>
 
       {/* Expense list */}
-      {sortedExpenses.length === 0 ? (
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '8rem 1rem' }}>
+          <p style={{ fontSize: '1.5rem' }}>Loading expenses...</p>
+        </div>
+      ) : error ? (
+        <div style={{ textAlign: 'center', padding: '8rem 1rem', color: '#ff6b6b' }}>
+          <p style={{ fontSize: '1.5rem' }}>{error}</p>
+        </div>
+      ) : sortedExpenses.length === 0 ? (
         <div style={{
           textAlign: 'center',
           padding: '8rem 1rem',

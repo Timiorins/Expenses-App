@@ -11,13 +11,21 @@
 import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';  // import your spinner
 
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, isLoading } = useContext(AuthContext);
 
-  // Temporary bypass for testing – comment this line out later
-  return children;  // always show the page, ignore auth
+  // If auth is still checking → show spinner, do NOT redirect yet
+  if (isLoading) {
+    return <LoadingSpinner message="Verifying login..." />;
+  }
 
-  // Original code (uncomment when backend is ready)
-  // return isAuthenticated ? children : <Navigate to="/login" replace />;
+  // Only now we know the real value — safe to decide
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Authenticated → show the page
+  return children;
 }

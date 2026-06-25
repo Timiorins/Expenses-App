@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicHeader from '../components/PublicHeader';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { toast } from 'react-toastify';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function Login() {
   const [login, setLogin] = useState({
@@ -9,6 +13,11 @@ function Login() {
   });
 
   const [isMouseover, setIsMouseOver] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false)
+
+  const { login: authLogin } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   function mouseOver() {
     setIsMouseOver(true);
@@ -28,16 +37,52 @@ function Login() {
     });
   }
 
-  function submitLogin(e) {
-    setLogin({
-      email: "",
-      password: ""
-    });
+  async function submitLogin(e) {
     e.preventDefault();
-    // → Add your real login logic here later (axios to backend)
+
+    if (!login.email || !login.password) {
+    toast.error("Fill all empty fields", { position: "top-center" });
+    return;
   }
 
-  const navigate = useNavigate();
+    setError('');
+    setLoading(true);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: login.email,
+          password: login.password,
+        }),
+      });
+      const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Login failed');
+    }
+
+    toast.success("Login successful!", { position: "top-center" });
+    console.log('Login success - token:', data.token);
+    authLogin(data.token);
+
+    setLogin({
+       email: "",
+       password: "",
+      });
+      
+      setError('')
+    } catch (err) {
+      toast.error(err.message, { position: "top-center" });
+      setError(err.message);
+      } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -127,6 +172,7 @@ function Login() {
           <button
             className="loginButton"
             type="submit"
+            disabled={loading}
             style={{
               padding: '1rem 0',
               fontSize: '1.25rem',
@@ -135,17 +181,19 @@ function Login() {
               color: 'white',
               border: 'none',
               borderRadius: '12px',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               marginTop: '1rem',
               transition: 'all 0.25s ease',
-              boxShadow: '0 6px 16px rgba(0,0,0,0.25)'
+              boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
+              opacity: loading ? 0.7 : 1,
             }}
             onMouseOver={mouseOver}
             onMouseOut={mouseOut}
             onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
           >
-            Login
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
+            {loading && ' Logging in...'}
           </button>
         </form>
 
