@@ -40,7 +40,7 @@ function Login() {
   async function submitLogin(e) {
     e.preventDefault();
 
-    if (!login.email || !login.password) {
+    if (!login.email || !login.password) { 
     toast.error("Fill all empty fields", { position: "top-center" });
     return;
   }

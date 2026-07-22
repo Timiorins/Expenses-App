@@ -320,7 +320,7 @@ export default function AllExpenses() {
                   padding: '0.9rem 2rem',
                   background: '#e5e7eb',
                   border: 'none',
-                  borderRadius: '10px',
+                  borderRadius: '10px', 
                   color: '#374151',
                   fontWeight: '600',
                   fontSize: '1.1rem',

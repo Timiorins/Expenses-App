@@ -10,7 +10,7 @@ import NewExpense from '@/pages/NewExpense'
 import ProtectedRoute from './ProtectedRoute'
 import { useState } from 'react'
 
-
+ 
 export default function App() {
   const [expenses, setExpenses] = useState([])
 

@@ -33,7 +33,7 @@ export default function NewExpense() {
     setError('');
     setLoading(true);
 
-    try {
+    try { 
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Not logged in');
 

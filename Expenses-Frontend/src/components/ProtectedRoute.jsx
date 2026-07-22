@@ -19,7 +19,7 @@ export default function ProtectedRoute({ children }) {
   // If auth is still checking → show spinner, do NOT redirect yet
   if (isLoading) {
     return <LoadingSpinner message="Verifying login..." />;
-  }
+  } 
 
   // Only now we know the real value — safe to decide
   if (!isAuthenticated) {

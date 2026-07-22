@@ -52,7 +52,7 @@ function Register() {
 
     if (register.password !== register.confirmPassword) {
       toast.error("Passwords do not match", { position: "top-center" });
-      return;
+      return; 
     }
 
     setError('');
