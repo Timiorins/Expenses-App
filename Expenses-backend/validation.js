@@ -90,7 +90,7 @@ const validate = (schema) => (req, res, next) => {
     const messages = error.details.map(detail => detail.message);
     return res.status(400).json({
       error: 'Validation failed',
-      messages: messages,          
+      messages: messages,           
       fullError: error.details      
     });
   }
